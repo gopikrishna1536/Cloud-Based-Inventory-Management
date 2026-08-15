@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Printer, Trash2, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Printer, Trash2, AlertCircle, Barcode as BarcodeIcon } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import api from '../services/api';
@@ -193,13 +194,23 @@ const Sales = () => {
           <p className="text-xs text-slate-500 mt-0.5">Generate sales invoices with automated profit calculation and stock subtraction.</p>
         </div>
 
-        <button
-          onClick={handleOpenModal}
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-md shadow-red-500/20 hover:scale-105 transition flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Sale Order</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <Link
+            to="/app/scan"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-md hover:bg-slate-800 transition flex items-center space-x-2 shrink-0"
+          >
+            <BarcodeIcon className="w-4 h-4 text-red-500" />
+            <span>Scan Barcode (POS)</span>
+          </Link>
+
+          <button
+            onClick={handleOpenModal}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-md shadow-red-500/20 hover:scale-105 transition flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Sale Order</span>
+          </button>
+        </div>
       </div>
 
       <DataTable

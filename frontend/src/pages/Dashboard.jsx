@@ -122,14 +122,14 @@ const Dashboard = () => {
           subtitle="Active vendors & partners"
         />
         <StatCard
-          title="Today's Sales"
+          title="Barcode POS Sales"
           value={formatCurrency(stats?.todaysSales)}
           icon={TrendingUp}
           color="emerald"
-          subtitle="Revenue recorded today"
+          subtitle="Barcode transactions recorded"
         />
         <StatCard
-          title="Monthly Sales"
+          title="Monthly Revenue"
           value={formatCurrency(stats?.monthlySales)}
           icon={DollarSign}
           color="red"
@@ -143,11 +143,11 @@ const Dashboard = () => {
           subtitle="Spent on supplier inventory"
         />
         <StatCard
-          title="Health Score"
-          value="98.5%"
+          title="Scanners & Audit"
+          value="Active"
           icon={PieIcon}
           color="red"
-          subtitle="Tenant operational efficiency"
+          subtitle="Real-time stock movement tracking"
         />
       </div>
 

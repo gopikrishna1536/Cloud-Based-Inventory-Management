@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Boxes, AlertTriangle, RefreshCw, Plus, Filter } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Boxes, AlertTriangle, RefreshCw, Plus, Filter, Barcode as BarcodeIcon, History } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import api from '../services/api';
@@ -7,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Inventory = () => {
   const { isManager } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('stock');
   const [inventoryStats, setInventoryStats] = useState(null);
   const [products, setProducts] = useState([]);
@@ -84,7 +86,7 @@ const Inventory = () => {
       cell: (row) => (
         <div>
           <div className="font-bold text-slate-900 text-sm">{row.name}</div>
-          <div className="text-[10px] text-slate-500 font-mono">SKU: {row.sku}</div>
+          <div className="text-[10px] text-slate-500 font-mono">SKU: {row.sku} | Barcode: {row.barcode || 'N/A'}</div>
         </div>
       ),
     },
@@ -167,7 +169,9 @@ const Inventory = () => {
       cell: (row) => (
         <div>
           <div className="font-bold text-slate-900 text-xs">{row.productId?.name || 'Deleted Product'}</div>
-          <div className="text-[10px] text-slate-500 font-mono">{row.productId?.sku}</div>
+          <div className="text-[10px] text-slate-500 font-mono">
+            SKU: {row.productId?.sku} {row.productId?.barcode ? `| Barcode: ${row.productId.barcode}` : ''}
+          </div>
         </div>
       ),
     },
@@ -218,18 +222,28 @@ const Inventory = () => {
           <p className="text-xs text-slate-500 mt-0.5">Track real-time stock levels and stock modification history.</p>
         </div>
 
-        {isManager && (
-          <button
-            onClick={() => {
-              setSelectedProduct(products[0]?._id || '');
-              setIsAdjustModalOpen(true);
-            }}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-md shadow-red-500/20 hover:scale-105 transition flex items-center space-x-2 shrink-0"
+        <div className="flex items-center space-x-3">
+          <Link
+            to="/app/scan"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-md hover:bg-slate-800 transition flex items-center space-x-2 shrink-0"
           >
-            <RefreshCw className="w-4 h-4" />
-            <span>Manual Stock Adjustment</span>
-          </button>
-        )}
+            <BarcodeIcon className="w-4 h-4 text-red-500" />
+            <span>Scan Barcode</span>
+          </Link>
+
+          {isManager && (
+            <button
+              onClick={() => {
+                setSelectedProduct(products[0]?._id || '');
+                setIsAdjustModalOpen(true);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-md shadow-red-500/20 hover:scale-105 transition flex items-center space-x-2 shrink-0"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Manual Stock Adjustment</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* KPI Stats Header Cards */}
@@ -281,8 +295,15 @@ const Inventory = () => {
           </button>
         </div>
 
-        {activeTab === 'stock' && (
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3">
+          <Link
+            to="/app/inventory/transactions"
+            className="text-xs text-red-600 font-bold hover:underline flex items-center space-x-1"
+          >
+            <History className="w-3.5 h-3.5" />
+            <span>Full Audit Trail</span>
+          </Link>
+          {activeTab === 'stock' && (
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -293,8 +314,8 @@ const Inventory = () => {
               <option value="LOW_STOCK">Low Stock</option>
               <option value="OUT_OF_STOCK">Out of Stock</option>
             </select>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Table Data */}

@@ -17,6 +17,8 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Inventory from './pages/Inventory';
+import InventoryTransactionsPage from './pages/InventoryTransactionsPage';
+import ScanPage from './pages/ScanPage';
 import Suppliers from './pages/Suppliers';
 import Purchases from './pages/Purchases';
 import Sales from './pages/Sales';
@@ -41,8 +43,10 @@ function App() {
             <Route element={<DashboardLayout />}>
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="scan" element={<ScanPage />} />
               <Route path="products" element={<Products />} />
               <Route path="inventory" element={<Inventory />} />
+              <Route path="inventory/transactions" element={<InventoryTransactionsPage />} />
               <Route path="sales" element={<Sales />} />
 
               {/* Manager & Admin Routes */}

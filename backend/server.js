@@ -37,6 +37,7 @@ app.use('/api/suppliers', require('./routes/supplierRoutes'));
 app.use('/api/purchases', require('./routes/purchaseRoutes'));
 app.use('/api/sales', require('./routes/saleRoutes'));
 app.use('/api/inventory', require('./routes/inventoryRoutes'));
+app.use('/api/scanner', require('./routes/scannerRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));

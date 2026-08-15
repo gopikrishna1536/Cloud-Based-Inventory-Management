@@ -15,6 +15,8 @@ import {
   LogOut,
   X,
   Cloud,
+  Barcode,
+  History,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,9 +31,11 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const navItems = [
     { label: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    { label: 'Barcode Scanner', path: '/app/scan', icon: Barcode, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     { label: 'Products', path: '/app/products', icon: Package, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     { label: 'Categories', path: '/app/categories', icon: Tags, roles: ['ADMIN', 'MANAGER'] },
     { label: 'Inventory', path: '/app/inventory', icon: Boxes, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    { label: 'Stock Audit Trail', path: '/app/inventory/transactions', icon: History, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     { label: 'Suppliers', path: '/app/suppliers', icon: Users, roles: ['ADMIN', 'MANAGER'] },
     { label: 'Purchases', path: '/app/purchases', icon: ShoppingCart, roles: ['ADMIN', 'MANAGER'] },
     { label: 'Sales', path: '/app/sales', icon: TrendingUp, roles: ['ADMIN', 'MANAGER', 'STAFF'] },

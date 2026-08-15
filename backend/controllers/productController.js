@@ -2,6 +2,7 @@ const Product = require('../models/Product');
 const Organization = require('../models/Organization');
 const { getIsConnected } = require('../config/db');
 const store = require('../utils/memStore');
+const { generateBarcode } = require('../utils/barcodeUtils');
 
 const getProducts = async (req, res, next) => {
   try {
@@ -13,6 +14,7 @@ const getProducts = async (req, res, next) => {
         query.$or = [
           { name: { $regex: search, $options: 'i' } },
           { sku: { $regex: search, $options: 'i' } },
+          { barcode: { $regex: search, $options: 'i' } },
         ];
       }
       if (category) query.categoryId = category;
@@ -35,8 +37,12 @@ const getProducts = async (req, res, next) => {
     } else {
       let filtered = store.products.filter((p) => p.organizationId === req.tenantId);
       if (search) {
+        const s = search.toLowerCase();
         filtered = filtered.filter(
-          (p) => p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase())
+          (p) =>
+            p.name.toLowerCase().includes(s) ||
+            p.sku.toLowerCase().includes(s) ||
+            (p.barcode && p.barcode.toLowerCase().includes(s))
         );
       }
       if (category) {
@@ -71,14 +77,51 @@ const getProductById = async (req, res, next) => {
   }
 };
 
+const getProductByBarcode = async (req, res, next) => {
+  try {
+    const { barcode } = req.params;
+    if (getIsConnected()) {
+      const product = await Product.findOne({ barcode: barcode.trim(), organizationId: req.tenantId })
+        .populate('categoryId', 'name')
+        .populate('supplierId', 'name company');
+      if (!product) return res.status(404).json({ success: false, message: 'No product associated with this barcode' });
+      return res.json({ success: true, data: product });
+    } else {
+      const product = store.products.find(
+        (p) => p.barcode === barcode.trim() && p.organizationId === req.tenantId
+      );
+      if (!product) return res.status(404).json({ success: false, message: 'No product associated with this barcode' });
+      return res.json({ success: true, data: product });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createProduct = async (req, res, next) => {
   try {
-    const { name, sku, description, categoryId, supplierId, purchasePrice, sellingPrice, stock, reorderLevel, maxStock, image } = req.body;
+    const {
+      name,
+      sku,
+      barcode: customBarcode,
+      description,
+      categoryId,
+      supplierId,
+      purchasePrice,
+      sellingPrice,
+      stock,
+      reorderLevel,
+      maxStock,
+      image,
+    } = req.body;
+
+    const barcode = customBarcode?.trim() || generateBarcode();
 
     if (getIsConnected()) {
       const product = await Product.create({
         name,
         sku: sku.trim().toUpperCase(),
+        barcode,
         description,
         categoryId,
         supplierId,
@@ -90,7 +133,9 @@ const createProduct = async (req, res, next) => {
         maxStock: maxStock || 100,
         image: image || '',
       });
-      const populated = await Product.findById(product._id).populate('categoryId', 'name').populate('supplierId', 'name company');
+      const populated = await Product.findById(product._id)
+        .populate('categoryId', 'name')
+        .populate('supplierId', 'name company');
       return res.status(201).json({ success: true, message: 'Product created', data: populated });
     } else {
       const cat = store.categories.find((c) => c._id === categoryId) || { _id: categoryId, name: 'General' };
@@ -100,6 +145,7 @@ const createProduct = async (req, res, next) => {
         _id: `prod_${Date.now()}`,
         name,
         sku: sku.trim().toUpperCase(),
+        barcode,
         description,
         categoryId: { _id: cat._id, name: cat.name },
         supplierId: { _id: sup._id, name: sup.name, company: sup.company },
@@ -127,7 +173,9 @@ const updateProduct = async (req, res, next) => {
         { _id: req.params.id, organizationId: req.tenantId },
         req.body,
         { new: true }
-      ).populate('categoryId', 'name').populate('supplierId', 'name company');
+      )
+        .populate('categoryId', 'name')
+        .populate('supplierId', 'name company');
       return res.json({ success: true, message: 'Product updated', data: product });
     } else {
       const productIdx = store.products.findIndex((p) => p._id === req.params.id && p.organizationId === req.tenantId);
@@ -135,6 +183,28 @@ const updateProduct = async (req, res, next) => {
 
       store.products[productIdx] = { ...store.products[productIdx], ...req.body };
       return res.json({ success: true, message: 'Product updated', data: store.products[productIdx] });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateProductBarcode = async (req, res, next) => {
+  try {
+    const newBarcode = generateBarcode();
+    if (getIsConnected()) {
+      const product = await Product.findOneAndUpdate(
+        { _id: req.params.id, organizationId: req.tenantId },
+        { barcode: newBarcode },
+        { new: true }
+      );
+      if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+      return res.json({ success: true, message: 'Barcode generated successfully', barcode: newBarcode, data: product });
+    } else {
+      const product = store.products.find((p) => p._id === req.params.id && p.organizationId === req.tenantId);
+      if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+      product.barcode = newBarcode;
+      return res.json({ success: true, message: 'Barcode generated successfully', barcode: newBarcode, data: product });
     }
   } catch (error) {
     next(error);
@@ -157,7 +227,9 @@ const deleteProduct = async (req, res, next) => {
 module.exports = {
   getProducts,
   getProductById,
+  getProductByBarcode,
   createProduct,
   updateProduct,
+  generateProductBarcode,
   deleteProduct,
 };

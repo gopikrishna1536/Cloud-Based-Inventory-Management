@@ -62,11 +62,17 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    barcode: {
+      type: String,
+      trim: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );
 
-// SKU must be unique within an organization
+// SKU and Barcode must be unique within an organization
 productSchema.index({ organizationId: 1, sku: 1 }, { unique: true });
+productSchema.index({ organizationId: 1, barcode: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -39,6 +39,10 @@ const inventoryTransactionSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    reason: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true }
 );
